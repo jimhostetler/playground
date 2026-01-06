@@ -186,6 +186,7 @@
         <div class="buttons">
             <button class="btn-primary" onclick="reverseText()">Reverse Text</button>
             <button class="btn-primary" onclick="makeUpperCase()">UPPERCASE</button>
+            <button class="btn-primary" onclick="alternateCase()">aLtErNaTe</button>
             <button class="btn-secondary" onclick="clearText()">Clear</button>
         </div>
 
@@ -262,6 +263,29 @@
             input.value = upper;
             updateStats();
             showOutput(upper);
+        }
+
+        function alternateCase() {
+            const text = input.value;
+            let result = '';
+            let shouldBeLower = true; // Start with lowercase
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+
+                // Check if character is a letter
+                if (/[a-zA-Z]/.test(char)) {
+                    result += shouldBeLower ? char.toLowerCase() : char.toUpperCase();
+                    shouldBeLower = !shouldBeLower; // Toggle for next letter
+                } else {
+                    // Keep non-letters as is (spaces, punctuation, etc.)
+                    result += char;
+                }
+            }
+
+            input.value = result;
+            updateStats();
+            showOutput(result);
         }
 
         function clearText() {
