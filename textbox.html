@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Text Box</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: 1.1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        .output-area {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #f5f5f5;
+            border-radius: 10px;
+            min-height: 100px;
+            display: none;
+        }
+
+        .output-area.show {
+            display: block;
+        }
+
+        .output-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .output-content {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .word-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .word-tag {
+            padding: 0.4rem 0.8rem;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Text Box</h1>
+
+        <div class="input-wrapper">
+            <input type="text" id="textInput" placeholder="type here">
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <span class="stat-number" id="charCount">0</span>
+                <span class="stat-label">Characters</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number" id="wordCount">0</span>
+                <span class="stat-label">Words</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-number" id="vowelCount">0</span>
+                <span class="stat-label">Vowels</span>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-primary" onclick="reverseText()">Reverse Text</button>
+            <button class="btn-primary" onclick="makeUpperCase()">UPPERCASE</button>
+            <button class="btn-secondary" onclick="clearText()">Clear</button>
+        </div>
+
+        <div class="output-area" id="outputArea">
+            <div class="output-title">Output:</div>
+            <div class="output-content" id="outputContent"></div>
+        </div>
+
+        <div class="output-area" id="wordCloudArea">
+            <div class="output-title">Word Cloud:</div>
+            <div class="word-cloud" id="wordCloud"></div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('textInput');
+        const charCount = document.getElementById('charCount');
+        const wordCount = document.getElementById('wordCount');
+        const vowelCount = document.getElementById('vowelCount');
+        const outputArea = document.getElementById('outputArea');
+        const outputContent = document.getElementById('outputContent');
+        const wordCloudArea = document.getElementById('wordCloudArea');
+        const wordCloud = document.getElementById('wordCloud');
+
+        input.addEventListener('input', updateStats);
+
+        function updateStats() {
+            const text = input.value;
+
+            // Character count
+            charCount.textContent = text.length;
+
+            // Word count
+            const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+            wordCount.textContent = words.length;
+
+            // Vowel count
+            const vowels = text.match(/[aeiouAEIOU]/g);
+            vowelCount.textContent = vowels ? vowels.length : 0;
+
+            // Update word cloud
+            updateWordCloud(words);
+        }
+
+        function updateWordCloud(words) {
+            if (words.length === 0) {
+                wordCloudArea.classList.remove('show');
+                return;
+            }
+
+            wordCloudArea.classList.add('show');
+            wordCloud.innerHTML = '';
+
+            // Get unique words
+            const uniqueWords = [...new Set(words)];
+
+            uniqueWords.forEach(word => {
+                const tag = document.createElement('span');
+                tag.className = 'word-tag';
+                tag.textContent = word;
+                wordCloud.appendChild(tag);
+            });
+        }
+
+        function reverseText() {
+            const text = input.value;
+            const reversed = text.split('').reverse().join('');
+            showOutput(reversed);
+        }
+
+        function makeUpperCase() {
+            const text = input.value;
+            const upper = text.toUpperCase();
+            input.value = upper;
+            updateStats();
+            showOutput(upper);
+        }
+
+        function clearText() {
+            input.value = '';
+            updateStats();
+            outputArea.classList.remove('show');
+        }
+
+        function showOutput(text) {
+            outputContent.textContent = text;
+            outputArea.classList.add('show');
+        }
+
+        // Initialize
+        updateStats();
+    </script>
+</body>
+</html>
