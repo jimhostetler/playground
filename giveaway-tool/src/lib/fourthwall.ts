@@ -1,56 +1,60 @@
 import type { FourthwallOrderRow } from '../types';
 
-// Proxied via Vite to avoid CORS in dev
-const BASE = '/fourthwall-api';
+// Proxied via Vite to avoid CORS in dev — target: https://api.fourthwall.com
+const BASE = '/fourthwall-api/open-api/v1.0';
 
-interface FWOrderItem {
-  name: string;
-  quantity?: number;
-}
-
-interface FWOrderData {
+// Shape of a single gift purchase from GET /gift-purchase/{id}
+interface FWGiftPurchase {
   id: string;
   created_at: string;
-  status: string;         // e.g. "OPEN", "FULFILLED", "CANCELLED"
-  claim_status?: string;  // e.g. "CLAIMED", "UNCLAIMED"
-  supporter?: {
+  status: string;          // e.g. "UNCLAIMED", "CLAIMED", "CANCELLED"
+  product?: {
+    name?: string;
+  };
+  variants?: { name?: string }[];
+  recipient?: {
+    username?: string;
+    email?: string;
+    name?: string;
+  };
+  gifter?: {
     username?: string;
     email?: string;
   };
-  items?: FWOrderItem[];
   admin_url?: string;
 }
 
-interface FWOrdersResponse {
-  results: FWOrderData[];
+interface FWGiftPurchasesResponse {
+  results: FWGiftPurchase[];
   has_next_page?: boolean;
 }
 
-function claimStatusFrom(o: FWOrderData): FourthwallOrderRow['claimStatus'] {
-  if (o.claim_status) {
-    return o.claim_status === 'CLAIMED' ? 'claimed' : 'unclaimed';
-  }
-  if (o.status === 'FULFILLED') return 'claimed';
-  if (o.status === 'OPEN') return 'unclaimed';
-  return 'unknown';
-}
+function mapGiftPurchase(g: FWGiftPurchase): FourthwallOrderRow {
+  const winner =
+    g.recipient?.username ??
+    g.recipient?.name ??
+    g.recipient?.email ??
+    'Unknown';
 
-// Expand each order into one row per item
-function expandOrder(o: FWOrderData): FourthwallOrderRow[] {
-  const winner = o.supporter?.username ?? o.supporter?.email ?? 'Unknown';
-  const email = o.supporter?.email ?? '';
-  const claimStatus = claimStatusFrom(o);
-  const items = o.items && o.items.length > 0 ? o.items : [{ name: 'Unknown product' }];
+  const itemName =
+    g.variants?.[0]?.name ??
+    g.product?.name ??
+    'Unknown product';
 
-  return items.map((item) => ({
-    orderId: o.id,
-    giveawayDate: o.created_at,
+  const status = g.status?.toUpperCase();
+  let claimStatus: FourthwallOrderRow['claimStatus'] = 'unknown';
+  if (status === 'CLAIMED' || status === 'FULFILLED') claimStatus = 'claimed';
+  else if (status === 'UNCLAIMED' || status === 'OPEN') claimStatus = 'unclaimed';
+
+  return {
+    orderId: g.id,
+    giveawayDate: g.created_at,
     winner,
-    email,
-    item: item.name,
+    email: g.recipient?.email ?? '',
+    item: itemName,
     claimStatus,
-    orderUrl: o.admin_url,
-  }));
+    orderUrl: g.admin_url,
+  };
 }
 
 export async function fetchGiveawayOrders(
@@ -65,14 +69,17 @@ export async function fetchGiveawayOrders(
   let page = 1;
 
   while (page <= 5) {
-    const res = await fetch(`${BASE}/v1/orders?page=${page}&per_page=50`, { headers });
+    const res = await fetch(
+      `${BASE}/gift-purchases?page=${page}&per_page=50`,
+      { headers }
+    );
 
     if (!res.ok) {
       throw new Error(`Fourthwall API error: ${res.status} ${res.statusText}`);
     }
 
-    const data: FWOrdersResponse = await res.json();
-    (data.results ?? []).forEach((o) => allRows.push(...expandOrder(o)));
+    const data: FWGiftPurchasesResponse = await res.json();
+    (data.results ?? []).forEach((g) => allRows.push(mapGiftPurchase(g)));
 
     if (!data.has_next_page) break;
     page++;

@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/fourthwall-api': {
-        target: 'https://openapi.fourthwall.com',
+        target: 'https://api.fourthwall.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/fourthwall-api/, ''),
       },
