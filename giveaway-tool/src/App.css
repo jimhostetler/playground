@@ -35,23 +35,51 @@ body {
 
 .app-header {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  padding: 16px 24px;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  height: 52px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
 
 .app-header h1 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--primary);
+  white-space: nowrap;
 }
 
-.app-subtitle {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+.app-header-spacer { flex: 1; }
+
+.twitch-status {
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
+
+/* ── Nav ── */
+.app-nav {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 100%;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0 14px;
+  height: 100%;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.nav-link:hover { color: var(--text); }
+.nav-link.active { color: var(--text); border-bottom-color: var(--primary); }
 
 .app-layout {
   display: grid;
@@ -303,6 +331,107 @@ code {
 .winner-prize {
   font-size: 1rem;
   color: var(--text-muted);
+}
+
+/* ── Re-run Tool page ── */
+.app-layout-full {
+  padding: 16px 24px;
+  flex: 1;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Active giveaway bar */
+.active-giveaway-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(145, 71, 255, 0.1);
+  border: 1px solid rgba(145, 71, 255, 0.35);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+
+.active-giveaway-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+/* Filter tabs */
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-tab {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.filter-tab:hover { color: var(--text); }
+.filter-tab.active {
+  background: rgba(145, 71, 255, 0.15);
+  border-color: rgba(145, 71, 255, 0.4);
+  color: var(--primary);
+}
+
+.filter-count {
+  background: var(--border);
+  border-radius: 99px;
+  font-size: 0.72rem;
+  padding: 1px 6px;
+}
+
+.filter-tab.active .filter-count {
+  background: rgba(145, 71, 255, 0.25);
+}
+
+/* Claim status badges */
+.badge-status-unclaimed { background: rgba(255, 152, 0, 0.15); color: var(--warning); }
+.badge-status-claimed   { background: rgba(76, 175, 80, 0.15);  color: var(--success); }
+.badge-status-unknown   { background: var(--surface2); color: var(--text-muted); }
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.rerun-table th, .rerun-table td {
+  white-space: nowrap;
+}
+
+.rerun-table td:nth-child(3) {
+  white-space: normal;
+  min-width: 160px;
 }
 
 /* ── Scrollbars ── */

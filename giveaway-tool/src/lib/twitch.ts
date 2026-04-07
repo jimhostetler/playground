@@ -3,6 +3,7 @@ import tmi from 'tmi.js';
 type MessageHandler = (username: string, message: string) => void;
 
 let client: tmi.Client | null = null;
+let connectedChannel = '';
 
 export function connectTwitch(
   channel: string,
@@ -14,6 +15,8 @@ export function connectTwitch(
     client.disconnect().catch(() => {});
     client = null;
   }
+
+  connectedChannel = channel;
 
   const opts: tmi.Options = {
     channels: [channel],
@@ -48,4 +51,12 @@ export function disconnectTwitch(): void {
     client.disconnect().catch(() => {});
     client = null;
   }
+  connectedChannel = '';
+}
+
+export async function sendChatMessage(message: string): Promise<void> {
+  if (!client || !connectedChannel) {
+    throw new Error('Not connected to Twitch');
+  }
+  await client.say(connectedChannel, message);
 }

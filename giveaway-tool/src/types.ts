@@ -13,12 +13,13 @@ export interface Settings {
   entryKeyword: string;
 }
 
-export interface FourthwallOrder {
-  id: string;
-  createdAt: string;
-  productName: string;
-  recipientName: string;
+// One row per order item
+export interface FourthwallOrderRow {
+  orderId: string;
+  giveawayDate: string;        // ISO string
+  winner: string;              // Twitch username or email
   email: string;
+  item: string;                // product/item name
   claimStatus: 'unclaimed' | 'claimed' | 'unknown';
   orderUrl?: string;
 }

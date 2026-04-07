@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Winner, Settings, FourthwallOrder } from '../types';
+import type { Winner, Settings } from '../types';
 
 interface GiveawayState {
   settings: Settings;
@@ -8,9 +8,6 @@ interface GiveawayState {
   currentPrize: string;
   entrants: string[];
   winners: Winner[];
-  unclaimedGiveaways: FourthwallOrder[];
-  isFetchingFourthwall: boolean;
-  fourthwallError: string | null;
 
   updateSettings: (s: Partial<Settings>) => void;
   startGiveaway: (prize: string) => void;
@@ -19,9 +16,6 @@ interface GiveawayState {
   drawWinner: () => Winner | null;
   removeWinner: (username: string) => void;
   resetCooldown: (username: string) => void;
-  setUnclaimedGiveaways: (orders: FourthwallOrder[]) => void;
-  setFourthwallError: (err: string | null) => void;
-  setFetchingFourthwall: (v: boolean) => void;
 }
 
 export const useGiveawayStore = create<GiveawayState>()(
@@ -38,9 +32,6 @@ export const useGiveawayStore = create<GiveawayState>()(
       currentPrize: '',
       entrants: [],
       winners: [],
-      unclaimedGiveaways: [],
-      isFetchingFourthwall: false,
-      fourthwallError: null,
 
       updateSettings: (s) =>
         set((state) => ({ settings: { ...state.settings, ...s } })),
@@ -57,7 +48,6 @@ export const useGiveawayStore = create<GiveawayState>()(
         const lc = username.toLowerCase();
         if (entrants.includes(lc)) return;
 
-        // Check cooldown
         const winner = winners.find((w) => w.username.toLowerCase() === lc);
         if (winner && Date.now() < winner.eligibleAt) return;
 
@@ -107,14 +97,9 @@ export const useGiveawayStore = create<GiveawayState>()(
               : w
           ),
         })),
-
-      setUnclaimedGiveaways: (orders) => set({ unclaimedGiveaways: orders }),
-      setFourthwallError: (err) => set({ fourthwallError: err }),
-      setFetchingFourthwall: (v) => set({ isFetchingFourthwall: v }),
     }),
     {
       name: 'giveaway-tool-storage',
-      // Don't persist transient chat state
       partialize: (state) => ({
         settings: state.settings,
         winners: state.winners,
