@@ -4,4 +4,13 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/fourthwall-api': {
+        target: 'https://openapi.fourthwall.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/fourthwall-api/, ''),
+      },
+    },
+  },
 })
